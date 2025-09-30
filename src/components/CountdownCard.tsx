@@ -30,12 +30,16 @@ export function CountdownCard({
         <CardContent>
           <div className="text-center">
             <div className="mb-2 text-4xl font-bold text-pink-700">
-              {daysTogether.toLocaleString()}
+              {isNaN(daysTogether) || daysTogether < 0
+                ? "0"
+                : daysTogether.toLocaleString()}
             </div>
             <p className="text-sm text-pink-600">
-              {partnerName
-                ? `Amazing days with ${partnerName}`
-                : "Amazing days together"}
+              {isNaN(daysTogether) || daysTogether < 0
+                ? "Starting your journey together"
+                : partnerName
+                  ? `Amazing days with ${partnerName}`
+                  : "Amazing days together"}
             </p>
           </div>
         </CardContent>

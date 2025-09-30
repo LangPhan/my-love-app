@@ -11,7 +11,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { type MediaFile, uploadMedia } from "@/lib/memories";
+import { useUploadMemory } from "@/hooks/queries/useMemories";
+import { type MediaFile } from "@/lib/memories";
 import { Models } from "appwrite";
 import { FileText, Loader2, Upload, Video, X } from "lucide-react";
 import Image from "next/image";
@@ -42,8 +43,9 @@ export function UploadDialog({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
-  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadMemoryMutation = useUploadMemory();
 
   const handleFileSelect = (selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
@@ -78,10 +80,8 @@ export function UploadDialog({
   const handleUpload = async () => {
     if (files.length === 0) return;
 
-    setUploading(true);
-
     try {
-      // Upload each file
+      // Upload each file using the mutation
       const uploadPromises = files.map(async (filePreview) => {
         const metadata = {
           title: title || filePreview.file.name,
@@ -93,27 +93,22 @@ export function UploadDialog({
           isPrivate: false,
         };
 
-        const result = await uploadMedia(
-          filePreview.file,
+        return uploadMemoryMutation.mutateAsync({
+          file: filePreview.file,
           coupleId,
-          user.$id,
-          user.name,
+          uploadedBy: user.$id,
+          uploaderName: user.name,
           metadata,
-        );
-
-        if (result.success && result.data) {
-          return result.data;
-        } else {
-          throw new Error(result.error || "Upload failed");
-        }
+        });
       });
 
       const uploadedMemories = await Promise.all(uploadPromises);
 
-      // Call onUploadComplete for each uploaded memory
-      uploadedMemories.forEach((memory) => {
-        onUploadComplete(memory);
-      });
+      // Call the completion callback for the first uploaded memory
+      // (The mutation will handle cache updates automatically)
+      if (uploadedMemories.length > 0) {
+        onUploadComplete(uploadedMemories[0]);
+      }
 
       // Reset form
       setFiles([]);
@@ -125,9 +120,7 @@ export function UploadDialog({
       onOpenChange(false);
     } catch (error) {
       console.error("Upload error:", error);
-      // TODO: Show error toast
-    } finally {
-      setUploading(false);
+      alert("Failed to upload memories. Please try again.");
     }
   };
 
@@ -140,7 +133,7 @@ export function UploadDialog({
   };
 
   const handleClose = () => {
-    if (!uploading) {
+    if (!uploadMemoryMutation.isPending) {
       resetForm();
       onOpenChange(false);
     }
@@ -289,7 +282,7 @@ export function UploadDialog({
             <Button
               variant="outline"
               onClick={handleClose}
-              disabled={uploading}
+              disabled={uploadMemoryMutation.isPending}
               className="flex-1"
             >
               Cancel
@@ -297,10 +290,10 @@ export function UploadDialog({
             <Button
               variant="romantic"
               onClick={handleUpload}
-              disabled={files.length === 0 || uploading}
+              disabled={files.length === 0 || uploadMemoryMutation.isPending}
               className="flex-1 gap-2"
             >
-              {uploading ? (
+              {uploadMemoryMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Uploading...

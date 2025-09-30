@@ -13,16 +13,16 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground text-foreground",
+        ghost: "hover:bg-accent hover:text-accent-foreground text-foreground",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         link: "text-primary underline-offset-4 hover:underline",
         romantic:
-          "bg-gradient-to-r from-pink-400 to-rose-400 text-white hover:from-pink-500 hover:to-rose-500 shadow-romantic [&>*]:text-white",
+          "bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:from-pink-600 hover:to-rose-600 shadow-romantic [&>*]:text-white font-medium",
         lavender:
-          "bg-lavender-500 text-white hover:bg-lavender-600 shadow-romantic",
-        mint: "bg-mint-500 text-white hover:bg-mint-600 shadow-romantic",
+          "bg-lavender-600 text-white hover:bg-lavender-700 shadow-romantic font-medium",
+        mint: "bg-mint-600 text-white hover:bg-mint-700 shadow-romantic font-medium",
       },
       size: {
         default: "h-10 px-4 py-2",

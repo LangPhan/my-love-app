@@ -4,55 +4,21 @@ import { CountdownCard } from "@/components/CountdownCard";
 import { QuickActions } from "@/components/QuickActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/hooks/useAuth";
-import { getCoupleInfo } from "@/lib/appwrite";
+import { useCurrentUser } from "@/hooks/queries/useAuth";
+import { useCoupleInfo } from "@/hooks/queries/useCouple";
 import { Heart, Loader2, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
-interface CoupleInfo {
-  daysTogether: number;
-  nextAnniversary?: {
-    date: string;
-    daysUntil: number;
-  } | null;
-  partnerName?: string;
-}
 
 export default function HomePage() {
-  const { user, loading } = useAuth();
-  const [coupleInfo, setCoupleInfo] = useState<CoupleInfo | null>(null);
-  const [coupleLoading, setCoupleLoading] = useState(false);
-  const [coupleError, setCoupleError] = useState<string | null>(null);
-
-  // Fetch couple info when user is available
-  useEffect(() => {
-    async function fetchCoupleInfo() {
-      if (!user) return;
-
-      setCoupleLoading(true);
-      setCoupleError(null);
-
-      try {
-        const result = await getCoupleInfo(user.$id);
-        if (result.success) {
-          setCoupleInfo(result.data);
-        } else {
-          setCoupleError(result.error || "Failed to load couple info");
-        }
-      } catch (error) {
-        console.error("Error fetching couple info:", error);
-        setCoupleError("An unexpected error occurred");
-      } finally {
-        setCoupleLoading(false);
-      }
-    }
-
-    fetchCoupleInfo();
-  }, [user]);
+  const { data: user, isLoading: userLoading } = useCurrentUser();
+  const {
+    data: coupleInfo,
+    isLoading: coupleLoading,
+    error: coupleError,
+  } = useCoupleInfo(user?.$id || null);
 
   // Show loading state
-  if (loading) {
+  if (userLoading) {
     return (
       <div className="space-y-6">
         <Card className="shadow-romantic border-pink-100 bg-white/80 backdrop-blur-sm">
@@ -99,7 +65,7 @@ export default function HomePage() {
   }
 
   // If user doesn't have a couple, show invite/create options
-  if (coupleError || !coupleInfo) {
+  if (coupleError || (!coupleLoading && !coupleInfo)) {
     return (
       <div className="space-y-6">
         <Card className="shadow-romantic border-pink-200 bg-gradient-to-br from-pink-100 to-rose-100">

@@ -1,4 +1,5 @@
 import { AuthGuard } from "@/components/providers/auth-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { Metadata, Viewport } from "next";
@@ -181,14 +182,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
       <body className="romantic-gradient text-foreground min-h-screen font-sans antialiased">
-        <ThemeProvider>
-          <AuthGuard>
-            <div className="fixed top-4 right-4 z-50">
-              <ThemeToggle />
-            </div>
-            {children}
-          </AuthGuard>
-        </ThemeProvider>
+        <QueryProvider>
+          <ThemeProvider>
+            <AuthGuard>
+              <div className="fixed top-4 right-4 z-50">
+                <ThemeToggle />
+              </div>
+              {children}
+            </AuthGuard>
+          </ThemeProvider>
+        </QueryProvider>
       </body>
     </html>
   );

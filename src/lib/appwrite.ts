@@ -613,8 +613,25 @@ export async function getCoupleInfo(userId: string): Promise<ApiResponse<any>> {
     );
 
     // Calculate days together
-    const startDate = new Date(coupleDoc.createdAt);
+    // Use anniversaryDate if available (more meaningful), otherwise use when couple was created
+    let startDate: Date;
+    if (coupleDoc.anniversaryDate) {
+      startDate = new Date(coupleDoc.anniversaryDate);
+    } else {
+      startDate = new Date(coupleDoc.$createdAt);
+    }
+
     const today = new Date();
+
+    // Ensure we have valid dates
+    if (isNaN(startDate.getTime()) || isNaN(today.getTime())) {
+      console.error("Invalid date detected:", { startDate, today, coupleDoc });
+      return {
+        success: false,
+        error: "Invalid date information",
+      };
+    }
+
     const daysTogether = Math.floor(
       (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
     );

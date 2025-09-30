@@ -6,56 +6,36 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UploadDialog } from "@/components/UploadDialog";
-import { useAuth } from "@/hooks/useAuth";
-import { getCoupleInfo } from "@/lib/appwrite";
-import { listMedia, type MediaFile } from "@/lib/memories";
+import { useCurrentUser } from "@/hooks/queries/useAuth";
+import { useCoupleInfo } from "@/hooks/queries/useCouple";
+import { useMemories, useUploadMemory } from "@/hooks/queries/useMemories";
+import { type MediaFile } from "@/lib/memories";
 import { Camera, Clock, Grid3X3, Heart, Plus, Upload } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function MemoriesPage() {
-  const { user, loading } = useAuth();
-  const [memories, setMemories] = useState<MediaFile[]>([]);
-  const [coupleId, setCoupleId] = useState<string | null>(null);
-  const [memoriesLoading, setMemoriesLoading] = useState(false);
+  const { data: user, isLoading: userLoading } = useCurrentUser();
+  const { data: coupleInfo } = useCoupleInfo(user?.$id || null);
+  const coupleId = coupleInfo?.couple?.$id || null;
+
+  const {
+    data: memoriesData,
+    isLoading: memoriesLoading,
+    error: memoriesError,
+  } = useMemories(coupleId);
+
+  const uploadMemoryMutation = useUploadMemory();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("grid");
 
-  // Get couple info and load memories
-  useEffect(() => {
-    async function loadMemories() {
-      if (!user) return;
-
-      try {
-        // Get couple information
-        const coupleResult = await getCoupleInfo(user.$id);
-        if (!coupleResult.success || !coupleResult.data.couple) {
-          return;
-        }
-
-        setCoupleId(coupleResult.data.couple.$id);
-        setMemoriesLoading(true);
-
-        // Load memories
-        const memoriesResult = await listMedia(coupleResult.data.couple.$id);
-        if (memoriesResult.success && memoriesResult.data) {
-          setMemories(memoriesResult.data.documents);
-        }
-      } catch (error) {
-        console.error("Error loading memories:", error);
-      } finally {
-        setMemoriesLoading(false);
-      }
-    }
-
-    loadMemories();
-  }, [user]);
+  const memories = memoriesData?.documents || [];
 
   const handleUploadComplete = (newMemory: MediaFile) => {
-    setMemories((prev) => [newMemory, ...prev]);
     setUploadDialogOpen(false);
+    // The mutation automatically updates the cache
   };
 
-  if (loading) {
+  if (userLoading || memoriesLoading) {
     return (
       <div className="space-y-6">
         <Card>
@@ -98,6 +78,13 @@ export default function MemoriesPage() {
             <p className="text-slate-600">
               You need to be connected with your partner to share memories.
             </p>
+            {memoriesError && (
+              <div className="mt-4 rounded-lg bg-red-50 p-3">
+                <p className="text-sm text-red-600">
+                  Error: {memoriesError.message}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -115,7 +102,7 @@ export default function MemoriesPage() {
               Memories
             </CardTitle>
             <Button
-              variant="romantic"
+              variant="default"
               size="sm"
               onClick={() => setUploadDialogOpen(true)}
               className="gap-2"

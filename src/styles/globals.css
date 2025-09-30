@@ -106,10 +106,10 @@
     --card-foreground: var(--color-slate-900);
     --popover: 0 0% 100%;
     --popover-foreground: var(--color-slate-900);
-    --primary: var(--color-pink-500);
-    --primary-foreground: 0 0% 100%;
-    --secondary: var(--color-lavender-100);
-    --secondary-foreground: var(--color-lavender-900);
+    --primary: var(--color-pink-600);
+    --primary-foreground: 255 255 255;
+    --secondary: var(--color-lavender-50);
+    --secondary-foreground: var(--color-lavender-800);
     --muted: var(--color-slate-100);
     --muted-foreground: var(--color-slate-500);
     --accent: var(--color-mint-100);
@@ -130,11 +130,11 @@
     --card-foreground: var(--color-slate-50);
     --popover: var(--color-dark-900);
     --popover-foreground: var(--color-slate-50);
-    --primary: var(--color-pink-400);
+    --primary: var(--color-pink-500);
     --primary-foreground: 255 255 255;
     /* White text for better contrast */
-    --secondary: var(--color-lavender-900);
-    --secondary-foreground: var(--color-lavender-100);
+    --secondary: var(--color-lavender-800);
+    --secondary-foreground: var(--color-lavender-50);
     --muted: var(--color-dark-800);
     --muted-foreground: var(--color-slate-400);
     --accent: var(--color-mint-800);
@@ -185,6 +185,16 @@
   .focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px hsl(var(--ring)), 0 0 0 4px hsl(var(--background));
+  }
+
+  /* High contrast text utilities */
+  .text-high-contrast {
+    color: hsl(var(--foreground));
+  }
+
+  .text-white-high-contrast {
+    color: rgb(255 255 255);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 }
 
