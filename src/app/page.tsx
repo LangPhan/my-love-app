@@ -1,21 +1,31 @@
 "use client";
 
-import "./app.css";
-import "@appwrite.io/pink-icons";
-import { useState, useEffect, useRef, useCallback } from "react";
 import { client } from "@/lib/appwrite";
+import "@appwrite.io/pink-icons";
 import { AppwriteException } from "appwrite";
-import NextjsLogo from "../static/nextjs-icon.svg";
-import AppwriteLogo from "../static/appwrite-icon.svg";
 import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
+import AppwriteLogo from "../static/appwrite-icon.svg";
+import NextjsLogo from "../static/nextjs-icon.svg";
+import "./app.css";
+
+interface LogEntry {
+  date: Date;
+  method: string;
+  path: string;
+  status: number;
+  response: string;
+}
+
+type Status = "idle" | "loading" | "success" | "error";
 
 export default function Home() {
-  const [detailHeight, setDetailHeight] = useState(55);
-  const [logs, setLogs] = useState([]);
-  const [status, setStatus] = useState("idle");
-  const [showLogs, setShowLogs] = useState(false);
+  const [detailHeight, setDetailHeight] = useState<number>(55);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [status, setStatus] = useState<Status>("idle");
+  const [showLogs, setShowLogs] = useState<boolean>(false);
 
-  const detailsRef = useRef(null);
+  const detailsRef = useRef<HTMLDetailsElement>(null);
 
   const updateHeight = useCallback(() => {
     if (detailsRef.current) {
@@ -34,17 +44,18 @@ export default function Home() {
     detailsRef.current.addEventListener("toggle", updateHeight);
 
     return () => {
-      if (!detailsRef.current) return;
-      detailsRef.current.removeEventListener("toggle", updateHeight);
+      if (detailsRef.current) {
+        detailsRef.current.removeEventListener("toggle", updateHeight);
+      }
     };
-  }, []);
+  }, [updateHeight]);
 
-  async function sendPing() {
+  async function sendPing(): Promise<void> {
     if (status === "loading") return;
     setStatus("loading");
     try {
       const result = await client.ping();
-      const log = {
+      const log: LogEntry = {
         date: new Date(),
         method: "GET",
         path: "/v1/ping",
@@ -54,7 +65,7 @@ export default function Home() {
       setLogs((prevLogs) => [log, ...prevLogs]);
       setStatus("success");
     } catch (err) {
-      const log = {
+      const log: LogEntry = {
         date: new Date(),
         method: "GET",
         path: "/v1/ping",
@@ -160,7 +171,7 @@ export default function Home() {
           <h2 className="text-xl font-light text-[#2D2D31]">Edit your app</h2>
           <p>
             Edit{" "}
-            <code className="rounded-sm bg-[#EDEDF0] p-1">app/page.js</code> to
+            <code className="rounded-sm bg-[#EDEDF0] p-1">app/page.tsx</code> to
             get started with building your app.
           </p>
         </div>
