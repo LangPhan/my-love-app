@@ -19,7 +19,7 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         link: "text-primary underline-offset-4 hover:underline",
         romantic:
-          "bg-gradient-to-r from-pink-400 to-rose-400 text-white hover:from-pink-500 hover:to-rose-500 shadow-romantic",
+          "bg-gradient-to-r from-pink-400 to-rose-400 text-white hover:from-pink-500 hover:to-rose-500 shadow-romantic [&>*]:text-white",
         lavender:
           "bg-lavender-500 text-white hover:bg-lavender-600 shadow-romantic",
         mint: "bg-mint-500 text-white hover:bg-mint-600 shadow-romantic",

@@ -314,4 +314,26 @@ export interface CreateTodoData {
   tags?: string[];
 }
 
+// Generic API response type for consistent error handling
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+// Paginated response type for list operations
+export interface PaginatedResponse<T> {
+  total: number;
+  documents: T[];
+  offset: number;
+  limit: number;
+}
+
+// Form validation types
+export interface ValidationError {
+  field: string;
+  message: string;
+}
+
 // All types are already exported above with their interface declarations

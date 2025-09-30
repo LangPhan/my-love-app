@@ -131,7 +131,8 @@
     --popover: var(--color-dark-900);
     --popover-foreground: var(--color-slate-50);
     --primary: var(--color-pink-400);
-    --primary-foreground: var(--color-dark-950);
+    --primary-foreground: 255 255 255;
+    /* White text for better contrast */
     --secondary: var(--color-lavender-900);
     --secondary-foreground: var(--color-lavender-100);
     --muted: var(--color-dark-800);
@@ -293,6 +294,11 @@
     50% {
       transform: translateY(-10px);
     }
+  }
+
+  /* Custom shadow utilities */
+  .shadow-romantic {
+    box-shadow: 0 4px 6px -1px rgba(244, 114, 182, 0.1), 0 2px 4px -2px rgba(244, 114, 182, 0.1);
   }
 
   /* Responsive padding utilities */

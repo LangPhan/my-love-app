@@ -563,3 +563,154 @@ export function handleAppwriteError(error: any): string {
   }
   return error.message || "An unexpected error occurred.";
 }
+
+/**
+ * Couple Management Functions
+ */
+
+/**
+ * Get couple information for the current user
+ */
+export async function getCoupleInfo(userId: string): Promise<ApiResponse<any>> {
+  try {
+    // First get the current user to get their email
+    const currentUser = await getCurrentUser();
+    if (!currentUser.success || !currentUser.data) {
+      return {
+        success: false,
+        error: "User not authenticated",
+      };
+    }
+
+    // Query the user document by email
+    const userQuery = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.USERS,
+      [Query.equal("email", currentUser.data.email)],
+    );
+
+    if (userQuery.documents.length === 0) {
+      return {
+        success: false,
+        error: "User profile not found in database",
+      };
+    }
+
+    const userDoc = userQuery.documents[0];
+
+    if (!userDoc.coupleId) {
+      return {
+        success: false,
+        error: "User is not part of a couple",
+      };
+    }
+
+    // Get the couple document
+    const coupleDoc = await databases.getDocument(
+      DATABASE_ID,
+      COLLECTIONS.COUPLES,
+      userDoc.coupleId,
+    );
+
+    // Calculate days together
+    const startDate = new Date(coupleDoc.createdAt);
+    const today = new Date();
+    const daysTogether = Math.floor(
+      (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    // Get partner information
+    const partnerId =
+      userDoc.$id === coupleDoc.user1Id ? coupleDoc.user2Id : coupleDoc.user1Id;
+    let partnerName = "Partner";
+
+    if (partnerId) {
+      try {
+        const partnerDoc = await databases.getDocument(
+          DATABASE_ID,
+          COLLECTIONS.USERS,
+          partnerId,
+        );
+        partnerName = partnerDoc.name || "Partner";
+      } catch (error) {
+        console.error("Error getting partner info:", error);
+      }
+    }
+
+    // Calculate next anniversary (if anniversary date is set)
+    let nextAnniversary = null;
+    if (coupleDoc.anniversaryDate) {
+      const annivDate = new Date(coupleDoc.anniversaryDate);
+      const currentYear = today.getFullYear();
+      let nextAnnivDate = new Date(
+        currentYear,
+        annivDate.getMonth(),
+        annivDate.getDate(),
+      );
+
+      // If this year's anniversary has passed, use next year's
+      if (nextAnnivDate < today) {
+        nextAnnivDate = new Date(
+          currentYear + 1,
+          annivDate.getMonth(),
+          annivDate.getDate(),
+        );
+      }
+
+      const daysUntilAnniversary = Math.ceil(
+        (nextAnnivDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      nextAnniversary = {
+        date: nextAnnivDate.toISOString(),
+        daysUntil: daysUntilAnniversary,
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        couple: coupleDoc,
+        daysTogether,
+        nextAnniversary,
+        partnerName,
+      },
+    };
+  } catch (error: any) {
+    console.error("Error getting couple info:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to get couple information",
+    };
+  }
+}
+
+/**
+ * Update couple anniversary date
+ */
+export async function updateAnniversaryDate(
+  coupleId: string,
+  anniversaryDate: string,
+): Promise<ApiResponse<any>> {
+  try {
+    const updatedCouple = await databases.updateDocument(
+      DATABASE_ID,
+      COLLECTIONS.COUPLES,
+      coupleId,
+      {
+        anniversaryDate,
+      },
+    );
+
+    return {
+      success: true,
+      data: updatedCouple,
+      message: "Anniversary date updated successfully",
+    };
+  } catch (error: any) {
+    console.error("Error updating anniversary date:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to update anniversary date",
+    };
+  }
+}
