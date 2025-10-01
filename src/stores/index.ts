@@ -91,7 +91,7 @@ export const useThemeStore = create<ThemeState>()(
   devtools(
     persist(
       (set) => ({
-        theme: "system",
+        theme: "light",
         resolvedTheme: "light",
         setTheme: (theme) => set({ theme }),
         setResolvedTheme: (resolvedTheme) => set({ resolvedTheme }),

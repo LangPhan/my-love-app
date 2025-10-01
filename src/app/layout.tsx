@@ -1,6 +1,7 @@
 import { AuthGuard } from "@/components/providers/auth-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ThemeInitializer } from "@/components/theme-initializer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { Metadata, Viewport } from "next";
 import { ReactNode } from "react";
@@ -121,6 +122,30 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Theme initialization script to prevent FOUC */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const stored = localStorage.getItem('love-app-theme');
+                  if (stored) {
+                    const theme = JSON.parse(stored);
+                    const resolvedTheme = theme.state?.theme || 'light';
+                    document.documentElement.classList.add(resolvedTheme);
+                    document.documentElement.style.colorScheme = resolvedTheme;
+                  } else {
+                    document.documentElement.classList.add('light');
+                    document.documentElement.style.colorScheme = 'light';
+                  }
+                } catch (e) {
+                  document.documentElement.classList.add('light');
+                  document.documentElement.style.colorScheme = 'light';
+                }
+              })();
+            `,
+          }}
+        />
         {/* Preconnect to external resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -184,6 +209,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className="romantic-gradient text-foreground min-h-screen font-sans antialiased">
         <QueryProvider>
           <ThemeProvider>
+            <ThemeInitializer />
             <AuthGuard>
               <div className="fixed top-4 right-4 z-50">
                 <ThemeToggle />

@@ -79,7 +79,10 @@ export async function updateThemePreference(
   try {
     const user = await account.get();
     if (!user) {
-      throw new Error("User not authenticated");
+      return {
+        success: false,
+        error: "User not authenticated - theme will be saved locally only",
+      };
     }
 
     await account.updatePrefs({
@@ -89,6 +92,17 @@ export async function updateThemePreference(
 
     return { success: true, message: "Theme preference updated" };
   } catch (error: any) {
+    // Handle authentication errors gracefully
+    if (
+      error.message?.includes("missing scopes") ||
+      error.message?.includes("User (role: guests)")
+    ) {
+      return {
+        success: false,
+        error: "User not authenticated - theme will be saved locally only",
+      };
+    }
+
     console.error("Error updating theme:", error);
     return {
       success: false,
