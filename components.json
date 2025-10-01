@@ -6,7 +6,7 @@
   "tailwind": {
     "config": "tailwind.config.ts",
     "css": "src/styles/globals.css",
-    "baseColor": "rose",
+    "baseColor": "neutral",
     "cssVariables": true
   },
   "aliases": {
