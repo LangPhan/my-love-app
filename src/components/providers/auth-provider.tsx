@@ -1,7 +1,8 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -47,10 +48,17 @@ export function AuthGuard({ children }: AuthGuardProps) {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 to-rose-50">
-        <div className="text-center">
-          <Heart className="mx-auto mb-4 h-12 w-12 animate-pulse text-pink-500" />
-          <Loader2 className="mx-auto mb-2 h-8 w-8 animate-spin text-pink-600" />
-          <p className="text-slate-600">Loading...</p>
+        <div className="space-y-4 text-center">
+          <Heart className="mx-auto h-12 w-12 animate-pulse text-pink-500" />
+          <div className="space-y-2">
+            <Skeleton className="mx-auto h-6 w-48" />
+            <Skeleton className="mx-auto h-4 w-32" />
+          </div>
+          <div className="mt-8 space-y-2">
+            <Skeleton className="mx-auto h-4 w-full max-w-md" />
+            <Skeleton className="mx-auto h-4 w-3/4 max-w-sm" />
+            <Skeleton className="mx-auto h-4 w-2/3 max-w-xs" />
+          </div>
         </div>
       </div>
     );

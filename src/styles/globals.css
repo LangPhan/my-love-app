@@ -1,327 +1,146 @@
 @import 'tailwindcss';
 
-@layer base {
-  :root {
-    /* Romantic Pastel Color Variables */
-    --color-rose-50: 255 241 242;
-    --color-rose-100: 255 228 230;
-    --color-rose-200: 254 205 211;
-    --color-rose-300: 253 164 175;
-    --color-rose-400: 251 113 133;
-    --color-rose-500: 244 63 94;
-    --color-rose-600: 225 29 72;
-    --color-rose-700: 190 18 60;
-    --color-rose-800: 159 18 57;
-    --color-rose-900: 136 19 55;
-    --color-rose-950: 76 5 25;
+:root {
+  --background: rgb(248 243 250);
+  --foreground: rgb(54 64 80);
+  --card: rgb(255 255 255);
+  --card-foreground: rgb(54 64 80);
+  --popover: rgb(255 255 255);
+  --popover-foreground: rgb(54 64 80);
+  --primary: rgb(167 139 251);
+  --primary-foreground: rgb(255 255 255);
+  --secondary: rgb(233 217 252);
+  --secondary-foreground: rgb(75 86 102);
+  --muted: rgb(244 234 255);
+  --muted-foreground: rgb(108 114 126);
+  --accent: rgb(245 229 247);
+  --accent-foreground: rgb(54 64 80);
+  --destructive: rgb(251 167 167);
+  --border: rgb(233 217 252);
+  --input: rgb(233 217 252);
+  --ring: rgb(167 139 251);
+  --chart-1: rgb(167 139 251);
+  --chart-2: rgb(140 93 248);
+  --chart-3: rgb(124 56 238);
+  --chart-4: rgb(109 41 216);
+  --chart-5: rgb(90 32 181);
+  --sidebar: rgb(233 217 252);
+  --sidebar-foreground: rgb(54 64 80);
+  --sidebar-primary: rgb(167 139 251);
+  --sidebar-primary-foreground: rgb(255 255 255);
+  --sidebar-accent: rgb(245 229 247);
+  --sidebar-accent-foreground: rgb(54 64 80);
+  --sidebar-border: rgb(233 217 252);
+  --sidebar-ring: rgb(167 139 251);
 
-    --color-pink-50: 253 242 248;
-    --color-pink-100: 252 231 243;
-    --color-pink-200: 251 207 232;
-    --color-pink-300: 249 168 212;
-    --color-pink-400: 244 114 182;
-    --color-pink-500: 236 72 153;
-    --color-pink-600: 219 39 119;
-    --color-pink-700: 190 24 93;
-    --color-pink-800: 157 23 77;
-    --color-pink-900: 131 24 67;
-    --color-pink-950: 80 7 36;
+  --font-sans: Open Sans, sans-serif;
+  --font-serif: Source Serif 4, serif;
+  --font-mono: IBM Plex Mono, monospace;
 
-    --color-lavender-50: 248 246 255;
-    --color-lavender-100: 240 235 255;
-    --color-lavender-200: 228 218 255;
-    --color-lavender-300: 209 191 255;
-    --color-lavender-400: 183 148 255;
-    --color-lavender-500: 156 105 255;
-    --color-lavender-600: 139 62 255;
-    --color-lavender-700: 124 40 247;
-    --color-lavender-800: 105 32 217;
-    --color-lavender-900: 87 27 181;
-    --color-lavender-950: 56 16 122;
+  --radius: 1.5rem;
 
-    --color-mint-50: 240 253 244;
-    --color-mint-100: 220 252 231;
-    --color-mint-200: 187 247 208;
-    --color-mint-300: 134 239 172;
-    --color-mint-400: 74 222 128;
-    --color-mint-500: 34 197 94;
-    --color-mint-600: 22 163 74;
-    --color-mint-700: 21 128 61;
-    --color-mint-800: 22 101 52;
-    --color-mint-900: 20 83 45;
-    --color-mint-950: 5 46 22;
+  --shadow-2xs: 0px 8px 16px -4px rgb(0 0 0 / 0.04);
+  --shadow-xs: 0px 8px 16px -4px rgb(0 0 0 / 0.04);
+  --shadow-sm: 0px 8px 16px -4px rgb(0 0 0 / 0.08), 0px 1px 2px -5px rgb(0 0 0 / 0.08);
+  --shadow: 0px 8px 16px -4px rgb(0 0 0 / 0.08), 0px 1px 2px -5px rgb(0 0 0 / 0.08);
+  --shadow-md: 0px 8px 16px -4px rgb(0 0 0 / 0.08), 0px 2px 4px -5px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0px 8px 16px -4px rgb(0 0 0 / 0.08), 0px 4px 6px -5px rgb(0 0 0 / 0.08);
+  --shadow-xl: 0px 8px 16px -4px rgb(0 0 0 / 0.08), 0px 8px 10px -5px rgb(0 0 0 / 0.08);
+  --shadow-2xl: 0px 8px 16px -4px rgb(0 0 0 / 0.20);
 
-    --color-sky-50: 240 249 255;
-    --color-sky-100: 224 242 254;
-    --color-sky-200: 186 230 253;
-    --color-sky-300: 125 211 252;
-    --color-sky-400: 56 189 248;
-    --color-sky-500: 14 165 233;
-    --color-sky-600: 2 132 199;
-    --color-sky-700: 3 105 161;
-    --color-sky-800: 7 89 133;
-    --color-sky-900: 12 74 110;
-    --color-sky-950: 8 47 73;
-
-    --color-cream-50: 255 254 247;
-    --color-cream-100: 255 251 235;
-    --color-cream-200: 254 243 199;
-    --color-cream-300: 253 230 138;
-    --color-cream-400: 252 211 77;
-    --color-cream-500: 251 191 36;
-    --color-cream-600: 245 158 11;
-    --color-cream-700: 217 119 6;
-    --color-cream-800: 180 83 9;
-    --color-cream-900: 146 64 14;
-    --color-cream-950: 120 53 15;
-
-    --color-slate-50: 248 250 252;
-    --color-slate-100: 241 245 249;
-    --color-slate-200: 226 232 240;
-    --color-slate-300: 203 213 225;
-    --color-slate-400: 148 163 184;
-    --color-slate-500: 100 116 139;
-    --color-slate-600: 71 85 105;
-    --color-slate-700: 51 65 85;
-    --color-slate-800: 30 41 59;
-    --color-slate-900: 15 23 42;
-    --color-slate-950: 2 6 23;
-
-    --color-dark-50: 247 247 247;
-    --color-dark-100: 227 227 227;
-    --color-dark-200: 200 200 200;
-    --color-dark-300: 164 164 164;
-    --color-dark-400: 129 129 129;
-    --color-dark-500: 102 102 102;
-    --color-dark-600: 81 81 81;
-    --color-dark-700: 67 67 67;
-    --color-dark-800: 56 56 56;
-    --color-dark-900: 49 49 49;
-    --color-dark-950: 26 26 26;
-
-    /* Shadcn UI Variables - Light Mode */
-    --background: 0 0% 100%;
-    --foreground: var(--color-slate-900);
-    --card: 0 0% 100%;
-    --card-foreground: var(--color-slate-900);
-    --popover: 0 0% 100%;
-    --popover-foreground: var(--color-slate-900);
-    --primary: var(--color-pink-600);
-    --primary-foreground: 255 255 255;
-    --secondary: var(--color-lavender-50);
-    --secondary-foreground: var(--color-lavender-800);
-    --muted: var(--color-slate-100);
-    --muted-foreground: var(--color-slate-500);
-    --accent: var(--color-mint-100);
-    --accent-foreground: var(--color-mint-900);
-    --destructive: var(--color-rose-500);
-    --destructive-foreground: 0 0% 100%;
-    --border: var(--color-slate-200);
-    --input: var(--color-slate-200);
-    --ring: var(--color-pink-400);
-    --radius: 0.75rem;
-  }
-
-  .dark {
-    /* Shadcn UI Variables - Dark Mode */
-    --background: var(--color-dark-950);
-    --foreground: var(--color-slate-50);
-    --card: var(--color-dark-900);
-    --card-foreground: var(--color-slate-50);
-    --popover: var(--color-dark-900);
-    --popover-foreground: var(--color-slate-50);
-    --primary: var(--color-pink-500);
-    --primary-foreground: 255 255 255;
-    /* White text for better contrast */
-    --secondary: var(--color-lavender-800);
-    --secondary-foreground: var(--color-lavender-50);
-    --muted: var(--color-dark-800);
-    --muted-foreground: var(--color-slate-400);
-    --accent: var(--color-mint-800);
-    --accent-foreground: var(--color-mint-100);
-    --destructive: var(--color-rose-400);
-    --destructive-foreground: var(--color-slate-50);
-    --border: var(--color-dark-700);
-    --input: var(--color-dark-700);
-    --ring: var(--color-pink-300);
-  }
-
-  * {
-    border-color: hsl(var(--border));
-  }
-
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  /* Custom scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background-color: hsl(var(--muted));
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--border));
-    border-radius: 9999px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--accent));
-  }
-
-  /* Selection styling */
-  ::selection {
-    background-color: hsl(var(--primary) / 0.2);
-    color: hsl(var(--foreground));
-  }
-
-  /* Focus outline styling */
-  .focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px hsl(var(--ring)), 0 0 0 4px hsl(var(--background));
-  }
-
-  /* High contrast text utilities */
-  .text-high-contrast {
-    color: hsl(var(--foreground));
-  }
-
-  .text-white-high-contrast {
-    color: rgb(255 255 255);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  }
 }
 
-@layer components {
+.dark {
+  --background: rgb(30 25 22);
+  --foreground: rgb(225 231 253);
+  --card: rgb(45 37 53);
+  --card-foreground: rgb(225 231 253);
+  --popover: rgb(45 37 53);
+  --popover-foreground: rgb(225 231 253);
+  --primary: rgb(193 170 255);
+  --primary-foreground: rgb(30 25 22);
+  --secondary: rgb(62 50 72);
+  --secondary-foreground: rgb(208 212 219);
+  --muted: rgb(45 37 53);
+  --muted-foreground: rgb(155 162 174);
+  --accent: rgb(75 62 91);
+  --accent-foreground: rgb(208 212 219);
+  --destructive: rgb(251 167 167);
+  --border: rgb(62 50 72);
+  --input: rgb(62 50 72);
+  --ring: rgb(193 170 255);
+  --chart-1: rgb(193 170 255);
+  --chart-2: rgb(167 139 251);
+  --chart-3: rgb(140 93 248);
+  --chart-4: rgb(124 56 238);
+  --chart-5: rgb(109 41 216);
+  --sidebar: rgb(62 50 72);
+  --sidebar-foreground: rgb(225 231 253);
+  --sidebar-primary: rgb(193 170 255);
+  --sidebar-primary-foreground: rgb(30 25 22);
+  --sidebar-accent: rgb(75 62 91);
+  --sidebar-accent-foreground: rgb(208 212 219);
+  --sidebar-border: rgb(62 50 72);
+  --sidebar-ring: rgb(193 170 255);
 
-  /* Romantic themed components */
-  .romantic-gradient {
-    background: linear-gradient(to bottom right,
-        rgb(252 231 243),
-        rgb(248 246 255),
-        rgb(255 241 242));
-  }
-
-  .dark .romantic-gradient {
-    background: linear-gradient(to bottom right,
-        rgb(131 24 67 / 0.2),
-        rgb(87 27 181 / 0.2),
-        rgb(136 19 55 / 0.2));
-  }
-
-  .romantic-card {
-    background-color: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-    border-radius: 1rem;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    backdrop-filter: blur(4px);
-  }
-
-  .romantic-button {
-    background-color: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    border-radius: 0.75rem;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-  }
-
-  .romantic-button:hover {
-    background-color: hsl(var(--primary) / 0.9);
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  }
-
-  .romantic-button:active {
-    background-color: hsl(var(--primary) / 0.8);
-  }
-
-  .romantic-input {
-    background-color: hsl(var(--background));
-    border: 1px solid hsl(var(--input));
-    border-radius: 0.75rem;
-    padding: 0.5rem 0.75rem;
-    transition: colors 0.2s, border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .romantic-input:focus {
-    border-color: hsl(var(--ring));
-    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
-    outline: none;
-  }
-
-  .romantic-input::placeholder {
-    color: hsl(var(--muted-foreground));
-  }
-
-  .glass-effect {
-    backdrop-filter: blur(12px);
-    background-color: rgb(255 255 255 / 0.7);
-    border: 1px solid rgb(255 255 255 / 0.2);
-  }
-
-  .dark .glass-effect {
-    background-color: rgb(49 49 49 / 0.7);
-    border: 1px solid rgb(67 67 67 / 0.5);
-  }
+  --shadow-2xs: 0 1px 3px 0px rgb(0 0 0 / 0.05);
+  --shadow-xs: 0 1px 3px 0px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0px rgb(0 0 0 / 0.10), 0 1px 2px -1px rgb(0 0 0 / 0.10);
+  --shadow: 0 1px 3px 0px rgb(0 0 0 / 0.10), 0 1px 2px -1px rgb(0 0 0 / 0.10);
+  --shadow-md: 0 1px 3px 0px rgb(0 0 0 / 0.10), 0 2px 4px -1px rgb(0 0 0 / 0.10);
+  --shadow-lg: 0 1px 3px 0px rgb(0 0 0 / 0.10), 0 4px 6px -1px rgb(0 0 0 / 0.10);
+  --shadow-xl: 0 1px 3px 0px rgb(0 0 0 / 0.10), 0 8px 10px -1px rgb(0 0 0 / 0.10);
+  --shadow-2xl: 0 1px 3px 0px rgb(0 0 0 / 0.25);
 }
 
-@layer utilities {
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Romantic spacing utilities */
-  .space-romantic>*+* {
-    margin-top: 1.5rem;
-  }
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
 
-  /* Text styling utilities */
-  .text-romantic {
-    color: transparent;
-    background-clip: text;
-    background-image: linear-gradient(to right,
-        rgb(236 72 153),
-        rgb(156 105 255),
-        rgb(244 63 94));
-  }
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 
-  /* Animation utilities */
-  .animate-romantic-float {
-    animation: romanticFloat 6s ease-in-out infinite;
-  }
-
-  @keyframes romanticFloat {
-
-    0%,
-    100% {
-      transform: translateY(0px);
-    }
-
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  /* Custom shadow utilities */
-  .shadow-romantic {
-    box-shadow: 0 4px 6px -1px rgba(244, 114, 182, 0.1), 0 2px 4px -2px rgba(244, 114, 182, 0.1);
-  }
-
-  /* Responsive padding utilities */
-  .px-safe {
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
-  }
-
-  .pb-safe {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
-
-  .pt-safe {
-    padding-top: max(1rem, env(safe-area-inset-top));
-  }
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
 }

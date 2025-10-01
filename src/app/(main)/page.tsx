@@ -4,9 +4,10 @@ import { CountdownCard } from "@/components/CountdownCard";
 import { QuickActions } from "@/components/QuickActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentUser } from "@/hooks/queries/useAuth";
 import { useCoupleInfo } from "@/hooks/queries/useCouple";
-import { Heart, Loader2, UserPlus } from "lucide-react";
+import { Heart, UserPlus } from "lucide-react";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -22,9 +23,13 @@ export default function HomePage() {
     return (
       <div className="space-y-6">
         <Card className="shadow-romantic border-pink-100 bg-white/80 backdrop-blur-sm">
-          <CardContent className="py-8 text-center">
-            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-pink-600" />
-            <p className="text-slate-600">Loading your love journey...</p>
+          <CardContent className="space-y-4 py-8">
+            <Skeleton className="mx-auto h-8 w-8 rounded-full" />
+            <Skeleton className="mx-auto h-4 w-48" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="mx-auto h-4 w-3/4" />
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -55,9 +60,13 @@ export default function HomePage() {
     return (
       <div className="space-y-6">
         <Card className="shadow-romantic border-pink-100 bg-white/80 backdrop-blur-sm">
-          <CardContent className="py-8 text-center">
-            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-pink-600" />
-            <p className="text-slate-600">Loading couple information...</p>
+          <CardContent className="space-y-4 py-8">
+            <Skeleton className="mx-auto h-12 w-12 rounded-full" />
+            <Skeleton className="mx-auto h-6 w-56" />
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -731,3 +731,47 @@ export async function updateAnniversaryDate(
     };
   }
 }
+
+/**
+ * Update user profile name
+ */
+export async function updateUserName(name: string): Promise<ApiResponse<any>> {
+  try {
+    const updatedUser = await account.updateName(name);
+
+    return {
+      success: true,
+      data: updatedUser,
+      message: "User name updated successfully",
+    };
+  } catch (error: any) {
+    console.error("Error updating user name:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to update user name",
+    };
+  }
+}
+
+/**
+ * Update user preferences
+ */
+export async function updateUserPrefs(
+  prefs: Record<string, any>,
+): Promise<ApiResponse<any>> {
+  try {
+    const updatedUser = await account.updatePrefs(prefs);
+
+    return {
+      success: true,
+      data: updatedUser,
+      message: "User preferences updated successfully",
+    };
+  } catch (error: any) {
+    console.error("Error updating user preferences:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to update user preferences",
+    };
+  }
+}

@@ -1,4 +1,11 @@
-import { createUser, getCurrentUser, login, logout } from "@/lib/appwrite";
+import {
+  createUser,
+  getCurrentUser,
+  login,
+  logout,
+  updateUserName,
+  updateUserPrefs,
+} from "@/lib/appwrite";
 import type { CreateUserData, LoginData } from "@/lib/types";
 import { useAuthStore } from "@/stores";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -106,6 +113,56 @@ export function useLogout() {
       // Even if logout fails on server, clear local state
       logoutStore();
       queryClient.clear();
+    },
+  });
+}
+
+// Update User Name Mutation
+export function useUpdateUserName() {
+  const queryClient = useQueryClient();
+  const { setUser } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const result = await updateUserName(name);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update name");
+      }
+      return result.data;
+    },
+    onSuccess: (updatedUser) => {
+      // Update the cached user data
+      queryClient.setQueryData(authKeys.user(), updatedUser);
+      setUser(updatedUser);
+      queryClient.invalidateQueries({ queryKey: authKeys.user() });
+    },
+    onError: (error) => {
+      console.error("Update name error:", error);
+    },
+  });
+}
+
+// Update User Preferences Mutation
+export function useUpdateUserPrefs() {
+  const queryClient = useQueryClient();
+  const { setUser } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (prefs: Record<string, any>) => {
+      const result = await updateUserPrefs(prefs);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update preferences");
+      }
+      return result.data;
+    },
+    onSuccess: (updatedUser) => {
+      // Update the cached user data
+      queryClient.setQueryData(authKeys.user(), updatedUser);
+      setUser(updatedUser);
+      queryClient.invalidateQueries({ queryKey: authKeys.user() });
+    },
+    onError: (error) => {
+      console.error("Update preferences error:", error);
     },
   });
 }

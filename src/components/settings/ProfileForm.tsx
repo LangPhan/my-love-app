@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useUpdateUserName, useUpdateUserPrefs } from "@/hooks/queries/useAuth";
 import { BUCKETS, storage } from "@/lib/appwrite";
 import { ID, Models } from "appwrite";
 import { Camera, Loader2, User } from "lucide-react";
@@ -16,9 +17,12 @@ interface ProfileFormProps {
 export function ProfileForm({ user }: ProfileFormProps) {
   const [displayName, setDisplayName] = useState(user.name || "");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarFileId, setAvatarFileId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const updateNameMutation = useUpdateUserName();
+  const updatePrefsMutation = useUpdateUserPrefs();
 
   // Get current avatar URL from storage if available
   const currentAvatarUrl = (user.prefs as any)?.avatarFileId
@@ -55,10 +59,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
           .toString();
 
         setAvatarUrl(previewUrl);
-
-        // TODO: Save fileId to user preferences
-        // This would typically be done via a server action
-        console.log("Avatar uploaded with ID:", fileId);
+        setAvatarFileId(fileId);
       }
     } catch (error) {
       console.error("Error uploading avatar:", error);
@@ -76,30 +77,25 @@ export function ProfileForm({ user }: ProfileFormProps) {
   };
 
   const handleSaveProfile = async () => {
-    setIsSaving(true);
     try {
-      const formData = new FormData();
-      formData.append("displayName", displayName);
-      if (avatarUrl) {
-        // In a real implementation, we'd need to extract the fileId from the avatarUrl
-        // For now, we'll skip this part
-        console.log("Avatar URL to save:", avatarUrl);
+      // Update display name if changed
+      if (displayName.trim() !== user.name) {
+        await updateNameMutation.mutateAsync(displayName.trim());
       }
 
-      // Import and use the server action
-      const { updateUserProfile } = await import("@/app/actions/profile");
-      const result = await updateUserProfile(formData);
-
-      if (result.success) {
-        alert("Profile updated successfully!");
-      } else {
-        alert(result.error || "Failed to save profile");
+      // Update avatar if a new one was uploaded
+      if (avatarFileId) {
+        const currentPrefs = user.prefs || {};
+        await updatePrefsMutation.mutateAsync({
+          ...currentPrefs,
+          avatarFileId,
+        });
       }
-    } catch (error) {
-      console.error("Error saving profile:", error);
-      alert("Failed to save profile. Please try again.");
-    } finally {
-      setIsSaving(false);
+
+      alert("Profile updated successfully!");
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      alert(error.message || "Failed to update profile. Please try again.");
     }
   };
 
@@ -188,11 +184,19 @@ export function ProfileForm({ user }: ProfileFormProps) {
       <div className="pt-4">
         <Button
           onClick={handleSaveProfile}
-          disabled={isSaving || displayName.trim() === ""}
+          disabled={
+            updateNameMutation.isPending ||
+            updatePrefsMutation.isPending ||
+            displayName.trim() === ""
+          }
           className="gap-2"
         >
-          {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-          {isSaving ? "Saving..." : "Save Changes"}
+          {(updateNameMutation.isPending || updatePrefsMutation.isPending) && (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          )}
+          {updateNameMutation.isPending || updatePrefsMutation.isPending
+            ? "Saving..."
+            : "Save Changes"}
         </Button>
       </div>
     </div>

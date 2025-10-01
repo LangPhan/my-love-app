@@ -4,6 +4,7 @@ import { GalleryGrid } from "@/components/GalleryGrid";
 import { TimelineView } from "@/components/TimelineView";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UploadDialog } from "@/components/UploadDialog";
 import { useCurrentUser } from "@/hooks/queries/useAuth";
@@ -38,10 +39,29 @@ export default function MemoriesPage() {
   if (userLoading || memoriesLoading) {
     return (
       <div className="space-y-6">
+        {/* Header skeleton */}
+        <Card className="shadow-romantic border-pink-100 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="text-center">
+            <Skeleton className="mx-auto mb-2 h-8 w-8 rounded-full" />
+            <Skeleton className="mx-auto mb-2 h-6 w-32" />
+            <Skeleton className="mx-auto h-4 w-48" />
+          </CardHeader>
+        </Card>
+
+        {/* Tabs skeleton */}
         <Card>
-          <CardContent className="py-8 text-center">
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-pink-600"></div>
-            <p className="text-slate-600">Loading...</p>
+          <CardContent className="p-6">
+            <div className="mb-6 flex gap-2">
+              <Skeleton className="h-10 w-20" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+
+            {/* Gallery grid skeleton */}
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="aspect-square rounded-lg" />
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
