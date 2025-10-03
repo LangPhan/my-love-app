@@ -26,6 +26,14 @@ const nextConfig = {
         port: '',
         pathname: '/v1/storage/buckets/*/files/*/preview**',
       },
+      {
+
+        protocol: 'https',
+        hostname: 'syd.cloud.appwrite.io',
+        port: '',
+        pathname: '/v1/storage/**',
+
+      }
     ],
   },
 };

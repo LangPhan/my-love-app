@@ -42,10 +42,53 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/webp", "image/avif"],
     remotePatterns: [
+      // External avatar / stock sources
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "ui-avatars.com",
+        pathname: "/**",
+      },
       {
         protocol: "https",
         hostname: "cloud.appwrite.io",
         pathname: "/v1/storage/buckets/*/files/*/view**",
+      },
+      {
+        protocol: "https",
+        hostname: "sys.cloud.appwrite.io",
+        pathname: "/v1/storage/buckets/*/files/*/view**",
+      },
+      // Regional Appwrite endpoint (Sydney) – add preview, view, and download variants
+      {
+        protocol: "https",
+        hostname: "syd.cloud.appwrite.io",
+        pathname: "/v1/storage/buckets/*/files/*/preview**",
+      },
+      {
+        protocol: "https",
+        hostname: "syd.cloud.appwrite.io",
+        pathname: "/v1/storage/buckets/*/files/*/view**",
+      },
+      {
+        protocol: "https",
+        hostname: "syd.cloud.appwrite.io",
+        pathname: "/v1/storage/buckets/*/files/*/download**",
+      },
+      // Also allow preview & download for global endpoint
+      {
+        protocol: "https",
+        hostname: "cloud.appwrite.io",
+        pathname: "/v1/storage/buckets/*/files/*/preview**",
+      },
+      {
+        protocol: "https",
+        hostname: "cloud.appwrite.io",
+        pathname: "/v1/storage/buckets/*/files/*/download**",
       },
       // Add your Appwrite endpoint if using self-hosted
       // {
