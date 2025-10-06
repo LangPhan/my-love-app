@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     siteName: "Love App",
     images: [
       {
-        url: "/icons/icon-512x512.png",
+        url: "/icons/android/android-launchericon-512-512.png",
         width: 512,
         height: 512,
         alt: "Love App Icon",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     title: "Love App - Stay Connected with Your Partner",
     description:
       "A romantic Progressive Web App for couples to chat, share memories, and manage shared todos together.",
-    images: ["/icons/icon-512x512.png"],
+    images: ["/icons/android/android-launchericon-512-512.png"],
   },
   robots: {
     index: true,
@@ -75,21 +75,25 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/icons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/icons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/ios/16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icons/ios/32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/ios/192.png", sizes: "192x192", type: "image/png" },
     ],
     apple: [
       {
-        url: "/icons/apple-touch-icon.png",
+        url: "/icons/ios/180.png",
         sizes: "180x180",
         type: "image/png",
       },
-    ],
-    other: [
       {
-        rel: "mask-icon",
-        url: "/icons/safari-pinned-tab.svg",
-        color: "#ec4899",
+        url: "/icons/ios/152.png",
+        sizes: "152x152",
+        type: "image/png",
+      },
+      {
+        url: "/icons/ios/120.png",
+        sizes: "120x120",
+        type: "image/png",
       },
     ],
   },
