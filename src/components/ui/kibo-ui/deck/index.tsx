@@ -28,6 +28,7 @@ export const Deck = ({ className, ...props }: DeckProps) => (
 export type DeckCardsProps = HTMLAttributes<HTMLDivElement> & {
   onSwipe?: (index: number, direction: "left" | "right") => void;
   onSwipeEnd?: (index: number, direction: "left" | "right") => void;
+  onExit?: () => void;
   threshold?: number;
   stackSize?: number;
   perspective?: number;
@@ -44,6 +45,7 @@ export const DeckCards = ({
   className,
   onSwipe,
   onSwipeEnd,
+  onExit,
   threshold = 150,
   stackSize = 3,
   perspective = 1000,
@@ -95,19 +97,45 @@ export const DeckCards = ({
 
   const handleSwipe = useCallback(
     (direction: "left" | "right") => {
-      if (displayIndex >= childrenArray.length) return;
+      // Kiểm tra nếu đang ở ảnh đầu/cuối và swipe theo hướng thoát
+      const atFirst = displayIndex === 0;
+      const atLast = displayIndex === childrenArray.length - 1;
+
+      if (
+        (atFirst && direction === "right") ||
+        (atLast && direction === "left")
+      ) {
+        // Thoát khỏi deck mode
+        onExit?.();
+        return;
+      }
+
       setExitDirection(direction);
       onSwipe?.(displayIndex, direction);
       onSwipeEnd?.(displayIndex, direction);
       setTimeout(() => {
         isInternalChangeRef.current = true;
-        const newIndex = displayIndex + 1;
+        let newIndex: number;
+        if (direction === "left") {
+          // Swipe left → next image
+          newIndex = Math.min(displayIndex + 1, childrenArray.length - 1);
+        } else {
+          // Swipe right→ previous image
+          newIndex = Math.max(displayIndex - 1, 0);
+        }
         setCurrentIndex(newIndex);
         setDisplayIndex(newIndex);
         setExitDirection(null);
       }, 300);
     },
-    [displayIndex, childrenArray.length, onSwipe, onSwipeEnd, setCurrentIndex],
+    [
+      displayIndex,
+      childrenArray.length,
+      onSwipe,
+      onSwipeEnd,
+      setCurrentIndex,
+      onExit,
+    ],
   );
 
   const visibleCards = childrenArray.slice(

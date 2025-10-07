@@ -1,6 +1,6 @@
 "use client";
 
-import { GalleryGrid } from "@/components/GalleryGrid";
+import { InfiniteGalleryGrid } from "@/components/InfiniteGalleryGrid";
 import { TimelineView } from "@/components/TimelineView";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UploadDialog } from "@/components/UploadDialog";
 import { useCurrentUser } from "@/hooks/queries/useAuth";
 import { useCoupleInfo } from "@/hooks/queries/useCouple";
-import { useMemories, useUploadMemory } from "@/hooks/queries/useMemories";
+import {
+  useAllInfiniteMemories,
+  useUploadInfiniteMemory,
+} from "@/hooks/queries/useInfiniteMemories";
 import { type MediaFile } from "@/lib/memories";
 import { Camera, Clock, Grid3X3, Heart, Plus, Upload } from "lucide-react";
 import { useState } from "react";
@@ -20,20 +23,25 @@ export default function MemoriesPage() {
   const coupleId = coupleInfo?.couple?.$id || null;
 
   const {
-    data: memoriesData,
+    memories,
+    total,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading: memoriesLoading,
     error: memoriesError,
-  } = useMemories(coupleId);
+  } = useAllInfiniteMemories(coupleId);
 
-  const uploadMemoryMutation = useUploadMemory();
+  const uploadMemoryMutation = useUploadInfiniteMemory();
+  console.log({ memories, total });
+
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("grid");
 
-  const memories = memoriesData?.documents || [];
-
   const handleUploadComplete = (newMemory: MediaFile) => {
+    console.log("handleUploadComplete called with:", newMemory);
     setUploadDialogOpen(false);
-    // The mutation automatically updates the cache
+    // The mutation automatically updates the cache via onSuccess
   };
 
   if (userLoading || memoriesLoading) {
@@ -176,7 +184,12 @@ export default function MemoriesPage() {
           </TabsList>
 
           <TabsContent value="grid" className="mt-6">
-            <GalleryGrid memories={memories} />
+            <InfiniteGalleryGrid
+              memories={memories}
+              onLoadMore={() => fetchNextPage()}
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+            />
           </TabsContent>
 
           <TabsContent value="timeline" className="mt-6">
@@ -192,6 +205,7 @@ export default function MemoriesPage() {
         coupleId={coupleId}
         user={user}
         onUploadComplete={handleUploadComplete}
+        uploadMutation={uploadMemoryMutation}
       />
     </div>
   );

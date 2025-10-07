@@ -78,6 +78,51 @@ function getPlaceholderImageUrl(title: string): string {
   return "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=400&h=300&fit=crop";
 }
 
+// Simple in-memory cache for storage file info to avoid repeated API calls
+const storageFileInfoCache = new Map<string, any>();
+
+/**
+ * Get file information from Appwrite storage with caching
+ */
+async function getStorageFileInfo(fileId: string) {
+  // Check cache first
+  if (storageFileInfoCache.has(fileId)) {
+    return storageFileInfoCache.get(fileId);
+  }
+
+  try {
+    const file = await storage.getFile(BUCKETS.MEMORIES, fileId);
+    const fileInfo = {
+      name: file.name,
+      mimeType: file.mimeType || "application/octet-stream", // fallback if mimeType is empty
+      size: file.sizeOriginal,
+    };
+
+    // Cache for future use (cache for 5 minutes)
+    storageFileInfoCache.set(fileId, fileInfo);
+    setTimeout(
+      () => {
+        storageFileInfoCache.delete(fileId);
+      },
+      5 * 60 * 1000,
+    );
+
+    return fileInfo;
+  } catch (error) {
+    console.warn("Failed to get storage file info for:", fileId, error);
+    // Cache null result to avoid repeated failed requests
+    storageFileInfoCache.set(fileId, null);
+    setTimeout(
+      () => {
+        storageFileInfoCache.delete(fileId);
+      },
+      1 * 60 * 1000,
+    ); // Cache failures for 1 minute only
+
+    return null;
+  }
+}
+
 /**
  * Get all media files for a couple
  */
@@ -101,6 +146,45 @@ export async function listMedia(
       queries,
     );
 
+    // Get storage file info for all real files first
+    const realFileIds: string[] = [];
+    const fileIdToDocMap = new Map();
+
+    result.documents.forEach((doc) => {
+      const hasMediaFiles =
+        doc.mediaFiles &&
+        Array.isArray(doc.mediaFiles) &&
+        doc.mediaFiles.length > 0;
+      if (hasMediaFiles) {
+        const fileId = doc.mediaFiles[0];
+        const isRealFileId =
+          fileId &&
+          typeof fileId === "string" &&
+          !fileId.includes(".") &&
+          fileId.length > 10;
+        if (isRealFileId) {
+          realFileIds.push(fileId);
+          fileIdToDocMap.set(fileId, doc);
+        }
+      }
+    });
+
+    // Batch get all storage file info (use allSettled to handle individual failures)
+    const storageFileResults = await Promise.allSettled(
+      realFileIds.map(async (fileId) => {
+        const info = await getStorageFileInfo(fileId);
+        return { fileId, info };
+      }),
+    );
+
+    // Create a map for quick lookup
+    const storageInfoMap = new Map();
+    storageFileResults.forEach((result) => {
+      if (result.status === "fulfilled" && result.value.info) {
+        storageInfoMap.set(result.value.fileId, result.value.info);
+      }
+    });
+
     // Transform documents to match MediaFile interface
     const documentsWithUrls = result.documents.map((doc) => {
       // Handle the case where we have mediaFiles array (current schema)
@@ -115,6 +199,7 @@ export async function listMedia(
       let fileName: string;
       let mimeType: string;
       let storageFileId: string;
+      let fileSize: number = 0;
 
       if (hasMediaFiles) {
         const fileId = doc.mediaFiles[0];
@@ -128,7 +213,9 @@ export async function listMedia(
           fileId.length > 10;
 
         if (isRealFileId) {
-          // This is a real uploaded file - generate proper Appwrite URLs
+          // This is a real uploaded file - get info from storage and generate URLs
+          const storageFileInfo = storageInfoMap.get(fileId);
+
           try {
             previewUrl = storage
               .getFilePreview(
@@ -152,8 +239,11 @@ export async function listMedia(
             previewUrl = getPlaceholderImageUrl(doc.title || "Memory");
             downloadUrl = getPlaceholderImageUrl(doc.title || "Memory");
           }
-          fileName = doc.title || "uploaded-image.jpg";
-          mimeType = fileId.includes("mp4") ? "video/mp4" : "image/jpeg";
+
+          // Use storage file info if available, fallback to document title
+          fileName = storageFileInfo?.name || doc.title || "uploaded-file";
+          mimeType = storageFileInfo?.mimeType || "image/jpeg";
+          fileSize = storageFileInfo?.size || 0;
         } else {
           // This is old placeholder data - use placeholder URLs
           previewUrl = getPlaceholderImageUrl(doc.title || "Memory");
@@ -178,7 +268,7 @@ export async function listMedia(
         uploadedBy: "unknown", // This would come from actual upload data
         uploaderName: "User", // This would come from actual upload data
         fileName,
-        fileSize: 0, // Mock data for old entries
+        fileSize,
         mimeType,
         title: doc.title,
         description: doc.description,

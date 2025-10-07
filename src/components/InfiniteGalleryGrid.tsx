@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Deck, DeckCards, DeckItem } from "@/components/ui/kibo-ui/deck";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   type MediaFile,
@@ -33,13 +34,16 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-interface GalleryGridProps {
+interface InfiniteGalleryGridProps {
   memories: MediaFile[];
+  onLoadMore: () => void;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
 }
 
-// Full-screen swipe deck overlay
+// Full-screen swipe deck overlay (same as original GalleryGrid)
 interface MemoryDeckProps {
   memories: MediaFile[];
   startIndex: number;
@@ -109,6 +113,7 @@ const MemoryDeck: React.FC<MemoryDeckProps> = ({
       setDeletingId(null);
     }
   };
+
   return (
     <div
       className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center"
@@ -306,8 +311,14 @@ const MemoryDeck: React.FC<MemoryDeckProps> = ({
   );
 };
 
-export function GalleryGrid({ memories }: GalleryGridProps) {
+export function InfiniteGalleryGrid({
+  memories,
+  onLoadMore,
+  hasNextPage,
+  isFetchingNextPage,
+}: InfiniteGalleryGridProps) {
   const [deckStartIndex, setDeckStartIndex] = useState<number | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // derived sorted list first, then keep internal mutable copy for edits/deletes
   const initialSorted = useMemo(
@@ -319,25 +330,78 @@ export function GalleryGrid({ memories }: GalleryGridProps) {
     [memories],
   );
 
-  const [displayMemories, setDisplayMemories] =
-    useState<MediaFile[]>(initialSorted);
+  // Hook để track screen size
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Sync when incoming prop changes (e.g., refetch)
   useEffect(() => {
-    setDisplayMemories(initialSorted);
-  }, [initialSorted]);
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Check initial size
+    checkIsMobile();
+
+    // Listen for resize
+    window.addEventListener("resize", checkIsMobile);
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
+
+  // Tạo grid layout với thứ tự từ trái qua phải, trên xuống dưới
+  const gridMemories = useMemo(() => {
+    // Sắp xếp memories theo columns để hiển thị đúng thứ tự
+    const columns = isMobile ? 2 : 3;
+
+    const columnArrays: MediaFile[][] = Array.from(
+      { length: columns },
+      () => [],
+    );
+
+    // Distribute memories vào columns theo thứ tự để tạo flow từ trái qua phải
+    initialSorted.forEach((memory, index) => {
+      const columnIndex = index % columns;
+      columnArrays[columnIndex].push(memory);
+    });
+
+    return columnArrays;
+  }, [initialSorted, isMobile]);
+
+  // Log when memories update
+  useEffect(() => {
+    console.log("InfiniteGalleryGrid: Memories updated", {
+      memoriesLength: memories.length,
+      initialSortedLength: initialSorted.length,
+    });
+  }, [memories.length, initialSorted.length]);
+
+  // Intersection Observer để tự động load more khi scroll đến cuối
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, onLoadMore]);
 
   const openAt = useCallback(
     (memory: MediaFile) => {
-      const idx = displayMemories.findIndex((m) => m.$id === memory.$id);
+      const idx = initialSorted.findIndex((m) => m.$id === memory.$id);
       setDeckStartIndex(idx === -1 ? 0 : idx);
     },
-    [displayMemories],
+    [initialSorted],
   );
 
   const closeDeck = useCallback(() => setDeckStartIndex(null), []);
 
-  if (displayMemories.length === 0) {
+  if (initialSorted.length === 0) {
     return (
       <div className="py-12 text-center">
         <p className="text-slate-600">No memories to display</p>
@@ -347,73 +411,111 @@ export function GalleryGrid({ memories }: GalleryGridProps) {
 
   return (
     <>
-      <div className="columns-2 gap-4 [column-fill:_balance] md:columns-3"></div>
-      <div className="columns-2 gap-4 space-y-4 md:columns-3">
-        {displayMemories.map((memory) => (
-          <div
-            key={memory.$id}
-            className="break-inside-avoid" // prevent column breaks inside
-            style={{ breakInside: "avoid" }}
-            onClick={() => openAt(memory)}
-          >
-            <div className="relative w-full bg-gray-100">
-              {memory.mimeType?.startsWith("image/") ? (
-                <Image
-                  src={
-                    memory.previewUrl ||
-                    memory.downloadUrl ||
-                    "/placeholder.png"
-                  }
-                  alt={memory.title || memory.fileName}
-                  width={memory.width || 800}
-                  height={memory.height || 800}
-                  className="h-auto w-full origin-center object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  sizes="(max-width: 768px) 50vw, 33vw"
-                  loading="lazy"
-                />
-              ) : memory.mimeType?.startsWith("video/") ? (
-                <div className="relative">
-                  <video
-                    className="h-auto max-h-[620px] w-full rounded-md object-cover"
-                    src={memory.downloadUrl}
-                    controls
-                    preload="metadata"
-                  />
-                  <div className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium tracking-wide text-white">
-                    VIDEO
-                  </div>
-                </div>
-              ) : (
-                <div className="relative flex w-full flex-col items-center justify-center gap-4 rounded-md bg-slate-50 py-10 text-slate-500">
-                  <FileText className="h-10 w-10" />
-                  <p className="text-xs font-medium opacity-70">
-                    {memory.fileName}
-                  </p>
-                  <div className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium tracking-wide text-white">
-                    FILE
-                  </div>
-                </div>
-              )}
+      <div className="grid grid-cols-2 gap-1 md:grid-cols-3">
+        {gridMemories.map((columnMemories, columnIndex) => (
+          <div key={`column-${columnIndex}`} className="flex flex-col gap-1">
+            {columnMemories.map((memory) => (
+              <div
+                key={memory.$id}
+                className="cursor-pointer"
+                onClick={() => openAt(memory)}
+              >
+                <div className="relative w-full overflow-hidden rounded-xs bg-gray-100 transition-transform duration-300 hover:scale-[1.02]">
+                  {memory.mimeType?.startsWith("image/") ? (
+                    <Image
+                      src={
+                        memory.previewUrl ||
+                        memory.downloadUrl ||
+                        "/placeholder.png"
+                      }
+                      alt={memory.title || memory.fileName}
+                      width={memory.width || 800}
+                      height={memory.height || 800}
+                      className="h-auto w-full origin-center object-cover"
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      loading="lazy"
+                    />
+                  ) : memory.mimeType?.startsWith("video/") ? (
+                    <div className="relative">
+                      <video
+                        className="h-auto max-h-[620px] w-full rounded-md object-cover"
+                        src={memory.downloadUrl}
+                        controls
+                        preload="metadata"
+                      />
+                      <div className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium tracking-wide text-white">
+                        VIDEO
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative flex w-full flex-col items-center justify-center gap-4 rounded-md bg-slate-50 py-10 text-slate-500">
+                      <FileText className="h-10 w-10" />
+                      <p className="text-xs font-medium opacity-70">
+                        {memory.fileName}
+                      </p>
+                      <div className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-[10px] font-medium tracking-wide text-white">
+                        FILE
+                      </div>
+                    </div>
+                  )}
 
-              {memory.title && (
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/70 to-transparent p-2">
-                  <p className="truncate text-xs font-medium text-white drop-shadow">
-                    {memory.title}
-                  </p>
+                  {memory.title && (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/70 to-transparent p-2">
+                      <p className="truncate text-xs font-medium text-white drop-shadow">
+                        {memory.title}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
         ))}
       </div>
 
-      {deckStartIndex !== null && displayMemories[deckStartIndex] && (
+      {/* Load More Trigger */}
+      {hasNextPage && (
+        <div ref={loadMoreRef} className="flex justify-center py-6">
+          {isFetchingNextPage ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-sm text-slate-600">
+                Loading more memories...
+              </span>
+            </div>
+          ) : (
+            <Button variant="outline" onClick={onLoadMore} className="gap-2">
+              Load More Memories
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Loading Skeletons cho memories đang tải */}
+      {isFetchingNextPage && (
+        <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3">
+          {Array.from({ length: isMobile ? 2 : 3 }).map((_, columnIndex) => (
+            <div
+              key={`skeleton-column-${columnIndex}`}
+              className="flex flex-col gap-4"
+            >
+              {[...Array(2)].map((_, i) => (
+                <Skeleton
+                  key={`skeleton-${columnIndex}-${i}`}
+                  className="h-48 w-full rounded-lg"
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {deckStartIndex !== null && initialSorted[deckStartIndex] && (
         <MemoryDeck
-          memories={displayMemories}
+          memories={initialSorted}
           startIndex={deckStartIndex}
           onClose={closeDeck}
           onDelete={async (media) => {
-            const beforeLength = displayMemories.length;
             try {
               if (
                 media.storageFileId &&
@@ -427,19 +529,8 @@ export function GalleryGrid({ memories }: GalleryGridProps) {
                   media.storageFileId || "placeholder",
                 );
               }
-              setDisplayMemories((prev) =>
-                prev.filter((m) => m.$id !== media.$id),
-              );
-              // Adjust deck index if we removed an item before current index
-              setDeckStartIndex((prev) => {
-                if (prev == null) return prev;
-                if (prev >= beforeLength - 1) {
-                  // closed in effect inside deck; but ensure close if list empty
-                  if (beforeLength - 1 <= 0) return null;
-                  return prev - 1;
-                }
-                return prev;
-              });
+              // Close deck after successful delete - parent component will refresh data
+              setDeckStartIndex(null);
             } catch (e) {
               console.error("Failed to delete media", e);
             }
@@ -450,19 +541,10 @@ export function GalleryGrid({ memories }: GalleryGridProps) {
                 title: data.title,
                 description: data.description,
               });
-              if (res.success && res.data) {
-                setDisplayMemories((prev) =>
-                  prev.map((m) =>
-                    m.$id === media.$id
-                      ? {
-                          ...m,
-                          title: data.title,
-                          description: data.description,
-                        }
-                      : m,
-                  ),
-                );
+              if (!res.success) {
+                throw new Error(res.error || "Failed to update metadata");
               }
+              // Don't need to update local state - parent query will refresh
             } catch (e) {
               console.error("Failed to edit media", e);
             }

@@ -24,6 +24,7 @@ interface UploadDialogProps {
   coupleId: string;
   user: Models.User<Models.Preferences>;
   onUploadComplete: (memory: MediaFile) => void;
+  uploadMutation?: any; // Optional custom upload mutation
 }
 
 interface FilePreview {
@@ -38,6 +39,7 @@ export function UploadDialog({
   coupleId,
   user,
   onUploadComplete,
+  uploadMutation,
 }: UploadDialogProps) {
   const [files, setFiles] = useState<FilePreview[]>([]);
   const [title, setTitle] = useState("");
@@ -45,7 +47,8 @@ export function UploadDialog({
   const [tags, setTags] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadMemoryMutation = useUploadMemory();
+  const defaultUploadMutation = useUploadMemory();
+  const uploadMemoryMutation = uploadMutation || defaultUploadMutation;
 
   const handleFileSelect = (selectedFiles: FileList | null) => {
     if (!selectedFiles) return;
