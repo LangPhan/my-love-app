@@ -41,6 +41,9 @@ interface InfiniteGalleryGridProps {
   onLoadMore: () => void;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
+  deleteMutation?: any; // Optional delete mutation
+  editMutation?: any; // Optional edit mutation
+  coupleId?: string; // For mutations
 }
 
 // Full-screen swipe deck overlay (same as original GalleryGrid)
@@ -316,6 +319,9 @@ export function InfiniteGalleryGrid({
   onLoadMore,
   hasNextPage,
   isFetchingNextPage,
+  deleteMutation,
+  editMutation,
+  coupleId,
 }: InfiniteGalleryGridProps) {
   const [deckStartIndex, setDeckStartIndex] = useState<number | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -517,19 +523,28 @@ export function InfiniteGalleryGrid({
           onClose={closeDeck}
           onDelete={async (media) => {
             try {
-              if (
-                media.storageFileId &&
-                media.storageFileId !== "placeholder"
-              ) {
-                await deleteMedia(media.$id, media.storageFileId);
+              if (deleteMutation && coupleId) {
+                // Use the mutation if provided
+                await deleteMutation.mutateAsync({
+                  mediaId: media.$id,
+                  storageFileId: media.storageFileId || "placeholder",
+                  coupleId,
+                });
               } else {
-                // Fallback: only delete doc if storage file unknown
-                await deleteMedia(
-                  media.$id,
-                  media.storageFileId || "placeholder",
-                );
+                // Fallback to direct API call
+                if (
+                  media.storageFileId &&
+                  media.storageFileId !== "placeholder"
+                ) {
+                  await deleteMedia(media.$id, media.storageFileId);
+                } else {
+                  await deleteMedia(
+                    media.$id,
+                    media.storageFileId || "placeholder",
+                  );
+                }
               }
-              // Close deck after successful delete - parent component will refresh data
+              // Close deck after successful delete
               setDeckStartIndex(null);
             } catch (e) {
               console.error("Failed to delete media", e);
@@ -537,14 +552,27 @@ export function InfiniteGalleryGrid({
           }}
           onEdit={async (media, data) => {
             try {
-              const res = await updateMediaMetadata(media.$id, {
-                title: data.title,
-                description: data.description,
-              });
-              if (!res.success) {
-                throw new Error(res.error || "Failed to update metadata");
+              if (editMutation && coupleId) {
+                // Use the mutation if provided
+                await editMutation.mutateAsync({
+                  mediaId: media.$id,
+                  data: {
+                    title: data.title,
+                    description: data.description,
+                  },
+                  coupleId,
+                });
+              } else {
+                // Fallback to direct API call
+                const res = await updateMediaMetadata(media.$id, {
+                  title: data.title,
+                  description: data.description,
+                });
+                if (!res.success) {
+                  throw new Error(res.error || "Failed to update metadata");
+                }
               }
-              // Don't need to update local state - parent query will refresh
+              // Mutations will handle cache updates automatically
             } catch (e) {
               console.error("Failed to edit media", e);
             }

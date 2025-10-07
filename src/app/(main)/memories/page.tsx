@@ -11,6 +11,8 @@ import { useCurrentUser } from "@/hooks/queries/useAuth";
 import { useCoupleInfo } from "@/hooks/queries/useCouple";
 import {
   useAllInfiniteMemories,
+  useDeleteInfiniteMemory,
+  useEditInfiniteMemory,
   useUploadInfiniteMemory,
 } from "@/hooks/queries/useInfiniteMemories";
 import { type MediaFile } from "@/lib/memories";
@@ -33,6 +35,8 @@ export default function MemoriesPage() {
   } = useAllInfiniteMemories(coupleId);
 
   const uploadMemoryMutation = useUploadInfiniteMemory();
+  const deleteMemoryMutation = useDeleteInfiniteMemory();
+  const editMemoryMutation = useEditInfiniteMemory();
   console.log({ memories, total });
 
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -189,6 +193,9 @@ export default function MemoriesPage() {
               onLoadMore={() => fetchNextPage()}
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
+              deleteMutation={deleteMemoryMutation}
+              editMutation={editMemoryMutation}
+              coupleId={coupleId}
             />
           </TabsContent>
 

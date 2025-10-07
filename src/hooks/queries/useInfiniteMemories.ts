@@ -1,5 +1,7 @@
 import {
+  deleteMedia,
   listMedia,
+  updateMediaMetadata,
   uploadMedia,
   type MediaFile,
   type MediaMetadata,
@@ -164,6 +166,124 @@ export function useUploadInfiniteMemory() {
         queryKey: infiniteMemoriesKeys.list(variables.coupleId, undefined),
         exact: true,
       });
+    },
+  });
+}
+
+// Delete Memory Mutation cho Infinite Memories
+export function useDeleteInfiniteMemory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      mediaId,
+      storageFileId,
+      coupleId,
+    }: {
+      mediaId: string;
+      storageFileId: string;
+      coupleId: string;
+    }) => {
+      const result = await deleteMedia(mediaId, storageFileId);
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete memory");
+      }
+      return result;
+    },
+    onSuccess: (_, variables) => {
+      console.log("useDeleteInfiniteMemory: onSuccess", {
+        mediaId: variables.mediaId,
+      });
+
+      // Remove the memory from infinite cache
+      queryClient.setQueryData(
+        infiniteMemoriesKeys.list(variables.coupleId, undefined),
+        (oldData: any) => {
+          if (!oldData || !oldData.pages) return oldData;
+
+          const updatedPages = oldData.pages.map((page: any) => ({
+            ...page,
+            documents: page.documents.filter(
+              (memory: MediaFile) => memory.$id !== variables.mediaId,
+            ),
+            total: Math.max(0, page.total - 1),
+          }));
+
+          return {
+            ...oldData,
+            pages: updatedPages,
+          };
+        },
+      );
+
+      // Invalidate all infinite memories queries
+      queryClient.invalidateQueries({ queryKey: infiniteMemoriesKeys.all });
+
+      // Also refetch to ensure consistency
+      queryClient.refetchQueries({
+        queryKey: infiniteMemoriesKeys.list(variables.coupleId, undefined),
+        exact: true,
+      });
+    },
+  });
+}
+
+// Edit Memory Mutation cho Infinite Memories
+export function useEditInfiniteMemory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      mediaId,
+      data,
+      coupleId,
+    }: {
+      mediaId: string;
+      data: { title: string; description: string };
+      coupleId: string;
+    }) => {
+      const result = await updateMediaMetadata(mediaId, {
+        title: data.title,
+        description: data.description,
+      });
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update memory");
+      }
+      return result.data;
+    },
+    onSuccess: (updatedMemory, variables) => {
+      console.log("useEditInfiniteMemory: onSuccess", {
+        mediaId: variables.mediaId,
+      });
+
+      // Update the memory in infinite cache
+      queryClient.setQueryData(
+        infiniteMemoriesKeys.list(variables.coupleId, undefined),
+        (oldData: any) => {
+          if (!oldData || !oldData.pages) return oldData;
+
+          const updatedPages = oldData.pages.map((page: any) => ({
+            ...page,
+            documents: page.documents.map((memory: MediaFile) =>
+              memory.$id === variables.mediaId
+                ? {
+                    ...memory,
+                    title: variables.data.title,
+                    description: variables.data.description,
+                  }
+                : memory,
+            ),
+          }));
+
+          return {
+            ...oldData,
+            pages: updatedPages,
+          };
+        },
+      );
+
+      // Invalidate all infinite memories queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: infiniteMemoriesKeys.all });
     },
   });
 }
